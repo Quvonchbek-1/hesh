@@ -116,6 +116,9 @@
 </div>
 
 <script>
+// Kutish uchun yordamchi funksiya
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function startMining() {
     const text = document.getElementById('commitMsg').value;
     const btn = document.getElementById('mineBtn');
@@ -135,14 +138,16 @@ async function startMining() {
     statusText.style.color = "#ffa657";
 
     let nonce = 1240;
-    let attempts = 60; // 60 ta qadam
-    const intervalTime = 100; // Har 100 ms da bitta qadam (60 * 100ms = 6 sekund)
-    
-    const interval = setInterval(async () => {
+    const totalSteps = 60; // Jami 60 ta qadam
+    const delay = 100;     // Har bir qadam oralig'i 100ms (60 * 100ms = 6 soniya)
+
+    const encoder = new TextEncoder();
+
+    for (let i = 0; i < totalSteps; i++) {
         nonce += Math.floor(Math.random() * 800) + 121;
         nonceBox.innerText = nonce;
 
-        const encoder = new TextEncoder();
+        // SHA-1 xeshni hisoblash
         const tempBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(text + nonce));
         const tempArray = Array.from(new Uint8Array(tempBuffer));
         const tempHex = tempArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -150,15 +155,14 @@ async function startMining() {
         fullHashBox.innerText = tempHex;
         shortHashBox.innerText = tempHex.substring(0, 7);
 
-        attempts--;
-        if (attempts <= 0) {
-            clearInterval(interval);
-            
-            statusText.innerText = "✅ Blok topildi! Xesh muvaffaqiyatli hisoblandi.";
-            statusText.style.color = "#3fb950";
-            btn.disabled = false;
-        }
-    }, intervalTime);
+        // 100 millisekund kutish
+        await sleep(delay);
+    }
+
+    // 6 soniya tugagach yakuniy holat
+    statusText.innerText = "✅ Blok topildi! Xesh muvaffaqiyatli hisoblandi.";
+    statusText.style.color = "#3fb950";
+    btn.disabled = false;
 }
 </script>
 
