@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Short Hash Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #161b22;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 400px;
+            border: 1px solid #30363d;
+        }
+        h2 {
+            margin-top: 0;
+            color: #58a6ff;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 5px;
+            color: #c9d1d9;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #238636;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2ea043;
+        }
+        .result {
+            margin-top: 20px;
+            background-color: #0d1117;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #30363d;
+        }
+        .hash-box {
+            font-family: monospace;
+            background: #21262d;
+            padding: 8px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin-top: 5px;
+            color: #7ee787;
+        }
+        .short-hash {
+            color: #ffa657;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Git Hash Generator</h2>
+    <label for="commitMsg">Commit xabari (Ma'lumot):</label>
+    <input type="text" id="commitMsg" placeholder="Masalan: fix bug in login page">
+    
+    <button onclick="generateHash()">Xesh yaratish</button>
+
+    <div class="result">
+        <div>To'liq Xesh (SHA-1):</div>
+        <div id="fullHash" class="hash-box">-</div>
+        
+        <div style="margin-top: 10px;">Git Qisqa Xesh (Short Hash):</div>
+        <div id="shortHash" class="hash-box short-hash">-</div>
+    </div>
+</div>
+
+<script>
+async function generateHash() {
+    const text = document.getElementById('commitMsg').value;
+    if (!text) {
+        alert("Iltimos, biror matn kiriting!");
+        return;
+    }
+
+    // Matnni baytlarga o'tkazish
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+
+    // Brauzerning kriptografik SHA-1 funksiyasidan foydalanish
+    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+
+    // Baytlarni o'n oltilik (hex) matnga o'tkazish
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const fullHashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Git odatda dastlabki 7 ta belgidan foydalanadi (Short Hash)
+    const shortHashHex = fullHashHex.substring(0, 7);
+
+    // Natijani ekranga chiqarish
+    document.getElementById('fullHash').innerText = fullHashHex;
+    document.getElementById('shortHash').innerText = shortHashHex;
+}
+</script>
+
+</body>
+</html>
