@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Git Short Hash Generator</title>
+    <title>Blockchain & Git Hash Mining Simulator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            width: 400px;
+            width: 450px;
             border: 1px solid #30363d;
         }
         h2 {
@@ -45,16 +45,22 @@
         }
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: #238636;
             color: white;
             border: none;
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
+            font-size: 1em;
         }
         button:hover {
             background-color: #2ea043;
+        }
+        button:disabled {
+            background-color: #21262d;
+            color: #484f58;
+            cursor: not-allowed;
         }
         .result {
             margin-top: 20px;
@@ -77,51 +83,91 @@
             font-size: 1.2em;
             font-weight: bold;
         }
+        .status {
+            text-align: center;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            color: #8b949e;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Git Hash Generator</h2>
-    <label for="commitMsg">Commit xabari (Ma'lumot):</label>
-    <input type="text" id="commitMsg" placeholder="Masalan: fix bug in login page">
+    <h2>Mayning va Xesh Simulyatori</h2>
+    <label for="commitMsg">Blokdagi Ma'lumot (Tranzaksiya):</label>
+    <input type="text" id="commitMsg" value="Quvonchbek -> Ali: 50 BTC" placeholder="Ma'lumot kiriting...">
     
-    <button onclick="generateHash()">Xesh yaratish</button>
+    <button id="mineBtn" onclick="startMining()">⛏️ Mayningni Boshlash (Qidirish)</button>
 
     <div class="result">
-        <div>To'liq Xesh (SHA-1):</div>
+        <div id="statusText" class="status">Holat: Kutish rejimida</div>
+        
+        <div>Tekshirilayotgan Nonce (Omadli raqam):</div>
+        <div id="nonceBox" class="hash-box" style="color: #d2a8ff;">0</div>
+
+        <div style="margin-top: 10px;">Hosil bo'layotgan Xesh (Jonli):</div>
         <div id="fullHash" class="hash-box">-</div>
         
-        <div style="margin-top: 10px;">Git Qisqa Xesh (Short Hash):</div>
+        <div style="margin-top: 10px;">Topilgan Qisqa Xesh (Short Hash):</div>
         <div id="shortHash" class="hash-box short-hash">-</div>
     </div>
 </div>
 
 <script>
-async function generateHash() {
+async function startMining() {
     const text = document.getElementById('commitMsg').value;
+    const btn = document.getElementById('mineBtn');
+    const statusText = document.getElementById('statusText');
+    const nonceBox = document.getElementById('nonceBox');
+    const fullHashBox = document.getElementById('fullHash');
+    const shortHashBox = document.getElementById('shortHash');
+
     if (!text) {
-        alert("Iltimos, biror matn kiriting!");
+        alert("Iltimos, ma'lumot kiriting!");
         return;
     }
 
-    // Matnni baytlarga o'tkazish
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
+    // Tugmani vaqtincha o'chirish
+    btn.disabled = true;
+    statusText.innerText = "⚡ Mayning ketmoqda: Nonce qidirilmoqda...";
+    statusText.style.color = "#ffa657";
 
-    // Brauzerning kriptografik SHA-1 funksiyasidan foydalanish
-    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+    let nonce = 0;
+    const maxAttempts = 40; // Animatsiya qancha qadam davom etishi
+    
+    // Animatsiya sikli (har bir qadamda Nonce o'zgaradi va ekranda yugurib turadi)
+    const interval = setInterval(async () => {
+        nonce += Math.floor(Math.random() * 250) + 17; // Nonce raqamini sakratib oshirish
+        nonceBox.innerText = nonce;
 
-    // Baytlarni o'n oltilik (hex) matnga o'tkazish
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const fullHashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        // Vaqtinchalik soxta xesh chiqarib turish (animatsiya effekti uchun)
+        const encoder = new TextEncoder();
+        const tempBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(text + nonce));
+        const tempArray = Array.from(new Uint8Array(tempBuffer));
+        const tempHex = tempArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        fullHashBox.innerText = tempHex;
+        shortHashBox.innerText = tempHex.substring(0, 7);
 
-    // Git odatda dastlabki 7 ta belgidan foydalanadi (Short Hash)
-    const shortHashHex = fullHashHex.substring(0, 7);
+        maxAttempts--;
+        if (maxAttempts <= 0) {
+            clearInterval(interval);
+            
+            // Oxirida haqiqiy yakuniy xeshni chiqarish
+            const finalBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(text + nonce));
+            const finalArray = Array.from(new Uint8Array(finalBuffer));
+            const finalHex = finalArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Natijani ekranga chiqarish
-    document.getElementById('fullHash').innerText = fullHashHex;
-    document.getElementById('shortHash').innerText = shortHashHex;
+            fullHashBox.innerText = finalHex;
+            shortHashBox.innerText = finalHex.substring(0, 7);
+            
+            statusText.innerText = "✅ Blok topildi! Xesh muvaffaqiyatli hisoblandi.";
+            statusText.style.color = "#3fb950";
+            btn.disabled = false;
+        }
+    }, 50); // Har 50 millisekundda bitta qadam (tezlikni o'zgartirish mumkin)
 }
 </script>
 
