@@ -129,20 +129,18 @@ async function startMining() {
         return;
     }
 
-    // Tugmani vaqtincha o'chirish
+    // Tugmani o'chirish
     btn.disabled = true;
     statusText.innerText = "⚡ Mayning ketmoqda: Nonce qidirilmoqda...";
     statusText.style.color = "#ffa657";
 
-    let nonce = 0;
-    const maxAttempts = 40; // Animatsiya qancha qadam davom etishi
+    let nonce = 1000;
+    let attempts = 40; // Xato to'g'irlandi (let qilindi)
     
-    // Animatsiya sikli (har bir qadamda Nonce o'zgaradi va ekranda yugurib turadi)
     const interval = setInterval(async () => {
-        nonce += Math.floor(Math.random() * 250) + 17; // Nonce raqamini sakratib oshirish
+        nonce += Math.floor(Math.random() * 500) + 43;
         nonceBox.innerText = nonce;
 
-        // Vaqtinchalik soxta xesh chiqarib turish (animatsiya effekti uchun)
         const encoder = new TextEncoder();
         const tempBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(text + nonce));
         const tempArray = Array.from(new Uint8Array(tempBuffer));
@@ -151,23 +149,15 @@ async function startMining() {
         fullHashBox.innerText = tempHex;
         shortHashBox.innerText = tempHex.substring(0, 7);
 
-        maxAttempts--;
-        if (maxAttempts <= 0) {
+        attempts--;
+        if (attempts <= 0) {
             clearInterval(interval);
-            
-            // Oxirida haqiqiy yakuniy xeshni chiqarish
-            const finalBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(text + nonce));
-            const finalArray = Array.from(new Uint8Array(finalBuffer));
-            const finalHex = finalArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-            fullHashBox.innerText = finalHex;
-            shortHashBox.innerText = finalHex.substring(0, 7);
             
             statusText.innerText = "✅ Blok topildi! Xesh muvaffaqiyatli hisoblandi.";
             statusText.style.color = "#3fb950";
             btn.disabled = false;
         }
-    }, 50); // Har 50 millisekundda bitta qadam (tezlikni o'zgartirish mumkin)
+    }, 60);
 }
 </script>
 
