@@ -1,168 +1,207 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blockchain & Git Hash Mining Simulator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0d1117;
-            color: #c9d1d9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: #161b22;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            width: 450px;
-            border: 1px solid #30363d;
-        }
-        h2 {
-            margin-top: 0;
-            color: #58a6ff;
-            text-align: center;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 5px;
-            color: #c9d1d9;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #238636;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        button:hover {
-            background-color: #2ea043;
-        }
-        button:disabled {
-            background-color: #21262d;
-            color: #484f58;
-            cursor: not-allowed;
-        }
-        .result {
-            margin-top: 20px;
-            background-color: #0d1117;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #30363d;
-        }
-        .hash-box {
-            font-family: monospace;
-            background: #21262d;
-            padding: 8px;
-            border-radius: 4px;
-            word-break: break-all;
-            margin-top: 5px;
-            color: #7ee787;
-        }
-        .short-hash {
-            color: #ffa657;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-        .status {
-            text-align: center;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-            color: #8b949e;
-            font-weight: bold;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockchain & Git Hash Mining Simulator</title>
+<style>
+    :root {
+        --white: #ffffff;
+        --navy: #0a1f4a;
+        --navy-soft: #1c356b;
+        --gold: #d4a22a;
+        --gold-deep: #b3861a;
+        --gold-pale: #f7edc9;
+        --line: #dfe4ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+        background: var(--white);
+        color: var(--navy);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 16px;
+    }
+    .container {
+        background: var(--white);
+        width: min(480px, 100%);
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-top: 5px solid var(--gold);
+        border-radius: 10px;
+        box-shadow: 0 8px 28px rgba(10, 31, 74, 0.10);
+    }
+    h2 {
+        margin: 0 0 22px;
+        color: var(--navy);
+        text-align: center;
+        font-size: 1.5rem;
+    }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    input[type="text"] {
+        width: 100%;
+        padding: 11px 12px;
+        margin-bottom: 18px;
+        background: var(--white);
+        border: 1.5px solid var(--line);
+        border-radius: 6px;
+        color: var(--navy);
+        font-size: 1rem;
+    }
+    input[type="text"]:focus-visible { outline: 3px solid var(--gold-pale); border-color: var(--gold); }
+    input[type="text"]:disabled { background: #f3f5fa; color: #6b7794; }
+    button {
+        width: 100%;
+        padding: 13px;
+        background: var(--gold);
+        color: var(--navy);
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    button:hover { background: var(--gold-deep); color: var(--white); }
+    button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+    button:disabled { background: #e6e9f1; color: #8a94ab; cursor: not-allowed; }
+
+    .result {
+        margin-top: 20px;
+        background: var(--navy);
+        color: var(--white);
+        padding: 16px;
+        border-radius: 8px;
+    }
+    .status { font-size: 0.92rem; font-weight: 600; margin-bottom: 8px; color: #c8d2ea; }
+    .status.running { color: var(--gold); }
+    .status.done { color: #ffe08a; }
+    .bar { height: 6px; background: var(--navy-soft); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+    .bar > div { height: 100%; width: 0; background: var(--gold); }
+    .field-title { font-size: 0.85rem; color: #aebbdc; margin-top: 12px; }
+    .hash-box {
+        font-family: Consolas, "Courier New", monospace;
+        background: var(--navy-soft);
+        padding: 9px 10px;
+        border-radius: 5px;
+        word-break: break-all;
+        margin-top: 5px;
+        color: var(--white);
+    }
+    .hash-box .zero { color: var(--gold); font-weight: 700; }
+    .short-hash { font-size: 1.25rem; font-weight: 700; color: var(--gold); }
+</style>
 </head>
 <body>
 
 <div class="container">
     <h2>Mayning va Xesh Simulyatori</h2>
-    <label for="commitMsg">Blokdagi Ma'lumot (Tranzaksiya):</label>
+    <label for="commitMsg">Blokdagi ma'lumot (tranzaksiya):</label>
     <input type="text" id="commitMsg" value="Quvonchbek -> Ali: 50 BTC" placeholder="Ma'lumot kiriting...">
-    
-    <button id="mineBtn" onclick="startMining()">⛏️ Mayningni Boshlash (Qidirish)</button>
+
+    <button id="mineBtn" onclick="startMining()">⛏️ Mayningni boshlash</button>
 
     <div class="result">
-        <div id="statusText" class="status">Holat: Kutish rejimida</div>
-        
-        <div>Tekshirilayotgan Nonce (Omadli raqam):</div>
-        <div id="nonceBox" class="hash-box" style="color: #d2a8ff;">0</div>
+        <div id="statusText" class="status">Holat: kutish rejimida</div>
+        <div class="bar"><div id="bar"></div></div>
 
-        <div style="margin-top: 10px;">Hosil bo'layotgan Xesh (Jonli):</div>
+        <div class="field-title">Tekshirilayotgan nonce:</div>
+        <div id="nonceBox" class="hash-box">0</div>
+
+        <div class="field-title">Hosil bo'layotgan xesh (SHA-1, jonli):</div>
         <div id="fullHash" class="hash-box">-</div>
-        
-        <div style="margin-top: 10px;">Topilgan Qisqa Xesh (Short Hash):</div>
+
+        <div class="field-title">Qisqa xesh (Git uslubida, 7 belgi):</div>
         <div id="shortHash" class="hash-box short-hash">-</div>
     </div>
 </div>
 
 <script>
-// Kutish uchun yordamchi funksiya
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const DURATION = 6000;          // animatsiya aynan 6 soniya
+const TARGET_ZEROS = "000";     // topilgan xesh shu nollardan boshlanadi
+const encoder = new TextEncoder();
+
+async function sha1(str) {
+    const buf = await crypto.subtle.digest('SHA-1', encoder.encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Xeshdagi boshlang'ich nollarni oltin rangda ko'rsatish
+function renderHash(el, hex, highlight) {
+    el.textContent = '';
+    let i = 0;
+    if (highlight) {
+        while (i < hex.length && hex[i] === '0') i++;
+    }
+    if (i > 0) {
+        const z = document.createElement('span');
+        z.className = 'zero';
+        z.textContent = hex.slice(0, i);
+        el.appendChild(z);
+    }
+    el.appendChild(document.createTextNode(hex.slice(i)));
+}
+
+// Haqiqiy mayning: shartga mos nonce'ni oldindan topamiz
+async function findNonce(text) {
+    let nonce = 0;
+    while (true) {
+        const h = await sha1(text + nonce);
+        if (h.startsWith(TARGET_ZEROS)) return { nonce, hash: h };
+        nonce++;
+    }
+}
 
 async function startMining() {
-    const text = document.getElementById('commitMsg').value;
+    const input = document.getElementById('commitMsg');
     const btn = document.getElementById('mineBtn');
     const statusText = document.getElementById('statusText');
     const nonceBox = document.getElementById('nonceBox');
     const fullHashBox = document.getElementById('fullHash');
     const shortHashBox = document.getElementById('shortHash');
+    const bar = document.getElementById('bar');
+    const text = input.value;
 
-    if (!text) {
-        alert("Iltimos, ma'lumot kiriting!");
-        return;
-    }
+    if (!text) { alert("Iltimos, ma'lumot kiriting!"); return; }
 
-    // Tugmani o'chirish
     btn.disabled = true;
-    statusText.innerText = "⚡ Mayning ketmoqda: Nonce qidirilmoqda...";
-    statusText.style.color = "#ffa657";
+    input.disabled = true;
+    statusText.className = 'status running';
+    statusText.textContent = "⚡ Mayning ketmoqda: nonce qidirilmoqda...";
+    bar.style.width = '0%';
 
-    let nonce = 1240;
-    const totalSteps = 60; // Jami 60 ta qadam
-    const delay = 100;     // Har bir qadam oralig'i 100ms (60 * 100ms = 6 soniya)
+    const target = await findNonce(text);
+    const start = performance.now();
 
-    const encoder = new TextEncoder();
+    while (true) {
+        const elapsed = performance.now() - start;
+        if (elapsed >= DURATION) break;
 
-    for (let i = 0; i < totalSteps; i++) {
-        nonce += Math.floor(Math.random() * 800) + 121;
-        nonceBox.innerText = nonce;
+        const progress = elapsed / DURATION;
+        const nonce = Math.floor(target.nonce * progress);   // nonce topilgan qiymatga qarab o'sadi
+        const hex = await sha1(text + nonce);
 
-        // SHA-1 xeshni hisoblash
-        const tempBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(text + nonce));
-        const tempArray = Array.from(new Uint8Array(tempBuffer));
-        const tempHex = tempArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        
-        fullHashBox.innerText = tempHex;
-        shortHashBox.innerText = tempHex.substring(0, 7);
+        nonceBox.textContent = nonce;
+        renderHash(fullHashBox, hex, false);
+        shortHashBox.textContent = hex.substring(0, 7);
+        bar.style.width = (progress * 100).toFixed(1) + '%';
 
-        // 100 millisekund kutish
-        await sleep(delay);
+        await new Promise(r => requestAnimationFrame(r));
     }
 
-    // 6 soniya tugagach yakuniy holat
-    statusText.innerText = "✅ Blok topildi! Xesh muvaffaqiyatli hisoblandi.";
-    statusText.style.color = "#3fb950";
+    // 6 soniya tugadi: yakuniy, haqiqiy topilgan xesh
+    nonceBox.textContent = target.nonce;
+    renderHash(fullHashBox, target.hash, true);
+    shortHashBox.textContent = target.hash.substring(0, 7);
+    bar.style.width = '100%';
+    statusText.className = 'status done';
+    statusText.textContent = "✅ Blok topildi! Xesh " + TARGET_ZEROS + " bilan boshlanadi.";
+
     btn.disabled = false;
+    input.disabled = false;
 }
 </script>
 
