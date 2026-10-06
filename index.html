@@ -134,11 +134,12 @@ async function startMining() {
     statusText.innerText = "⚡ Mayning ketmoqda: Nonce qidirilmoqda...";
     statusText.style.color = "#ffa657";
 
-    let nonce = 1000;
-    let attempts = 40; // Xato to'g'irlandi (let qilindi)
+    let nonce = 1240;
+    let attempts = 60; // 60 ta qadam
+    const intervalTime = 100; // Har 100 ms da bitta qadam (60 * 100ms = 6 sekund)
     
     const interval = setInterval(async () => {
-        nonce += Math.floor(Math.random() * 500) + 43;
+        nonce += Math.floor(Math.random() * 800) + 121;
         nonceBox.innerText = nonce;
 
         const encoder = new TextEncoder();
@@ -157,7 +158,7 @@ async function startMining() {
             statusText.style.color = "#3fb950";
             btn.disabled = false;
         }
-    }, 60);
+    }, intervalTime);
 }
 </script>
 
